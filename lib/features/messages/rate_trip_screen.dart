@@ -151,7 +151,7 @@ class _RateTripScreenState extends State<RateTripScreen> {
             Text(label, style: const TextStyle(fontSize: 16)),
             Text(
               '${value.toInt()}%',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Theme.of(context).primaryColor,
                 fontWeight: FontWeight.bold,
               ),
