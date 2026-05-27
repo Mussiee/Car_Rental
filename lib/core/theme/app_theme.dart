@@ -17,7 +17,6 @@ class AppTheme {
         seedColor: primaryColor,
         primary: primaryColor,
         secondary: secondaryColor,
-        background: backgroundColor,
         surface: surfaceColor,
         error: errorColor,
       ),
@@ -101,10 +100,10 @@ class AppTheme {
         labelStyle: TextStyle(color: textSecondary),
         hintStyle: TextStyle(color: Colors.grey.shade400),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surfaceColor,
         elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.05),
+        shadowColor: Colors.black.withValues(alpha: 0.05),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: Colors.grey.shade100, width: 1),
