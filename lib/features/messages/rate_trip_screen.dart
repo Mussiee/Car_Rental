@@ -21,97 +21,44 @@ class RateTripScreen extends StatefulWidget {
 }
 
 class _RateTripScreenState extends State<RateTripScreen> {
-  int _carRating = 5;
-  int _ownerRating = 5;
-  double _cleanliness = 80;
-  double _accuracy = 80;
-  double _communication = 80;
+  int _rating = 0;
   bool _isLoading = false;
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Rate Your Experience')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(title: const Text('Rate Your Trip')),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Car Rating
             const Text(
-              'Rate the Car',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              'How was your experience?',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
-            _buildStarRating(
-              _carRating,
-              (val) => setState(() => _carRating = val),
-            ),
-            const SizedBox(height: 24),
-
-            // Owner Rating
-            const Text(
-              'Rate the Owner',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            _buildStarRating(
-              _ownerRating,
-              (val) => setState(() => _ownerRating = val),
-            ),
-            const SizedBox(height: 24),
-
-            const Divider(),
-            const SizedBox(height: 16),
-            const Text(
-              'Detailed Ratings',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-
-            // Sliders
-            _buildSliderCategory(
-              'Cleanliness',
-              _cleanliness,
-              (val) => setState(() => _cleanliness = val),
-            ),
-            const SizedBox(height: 16),
-            _buildSliderCategory(
-              'Accuracy',
-              _accuracy,
-              (val) => setState(() => _accuracy = val),
-            ),
-            const SizedBox(height: 16),
-            _buildSliderCategory(
-              'Communication',
-              _communication,
-              (val) => setState(() => _communication = val),
-            ),
-
             const SizedBox(height: 32),
-
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (index) {
+                return IconButton(
+                  onPressed: () => setState(() => _rating = index + 1),
+                  icon: Icon(
+                    index < _rating ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                    size: 48,
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 48),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: _isLoading ? null : _submitReview,
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
-                  backgroundColor: Theme.of(context).primaryColor,
-                ),
+                onPressed: _rating == 0 || _isLoading ? null : _submitReview,
+                style: FilledButton.styleFrom(padding: const EdgeInsets.all(16)),
                 child: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                     : const Text('Submit Rating'),
               ),
             ),
@@ -121,67 +68,8 @@ class _RateTripScreenState extends State<RateTripScreen> {
     );
   }
 
-  Widget _buildStarRating(int current, Function(int) onSelected) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(5, (index) {
-        return IconButton(
-          onPressed: () => onSelected(index + 1),
-          icon: Icon(
-            index < current ? Icons.star : Icons.star_border,
-            color: Colors.amber,
-            size: 40,
-          ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildSliderCategory(
-    String label,
-    double value,
-    Function(double) onChanged,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 16)),
-            Text(
-              '${value.toInt()}%',
-              style: TextStyle(
-                color: Theme.of(context).primaryColor,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        Slider(
-          value: value,
-          min: 0,
-          max: 100,
-          divisions: 20,
-          activeColor: Theme.of(context).primaryColor,
-          onChanged: onChanged,
-        ),
-      ],
-    );
-  }
-
   Future<void> _submitReview() async {
-    if (_carRating == 0 || _ownerRating == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please provide ratings for both car and owner'),
-        ),
-      );
-      return;
-    }
-
     setState(() => _isLoading = true);
-
     try {
       final auth = context.read<AuthService>();
       final firestore = context.read<FirestoreService>();
@@ -193,12 +81,7 @@ class _RateTripScreenState extends State<RateTripScreen> {
         ownerId: widget.ownerId,
         userId: auth.currentUser!.uid,
         userName: auth.currentUser!.displayName ?? 'User',
-        carRating: _carRating.toDouble(),
-        ownerRating: _ownerRating.toDouble(),
-        cleanliness: _cleanliness,
-        accuracy: _accuracy,
-        communication: _communication,
-        comment: '',
+        rating: _rating.toDouble(),
         createdAt: DateTime.now(),
       );
 
@@ -207,14 +90,12 @@ class _RateTripScreenState extends State<RateTripScreen> {
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Thank you for your feedback!')),
+          const SnackBar(content: Text('Thanks for your rating!')),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

@@ -302,37 +302,11 @@ class FirestoreService {
           }
           double total = 0;
           for (var doc in snapshot.docs) {
-            total += (doc.data()['ownerRating'] ?? 0).toDouble();
+            total += (doc.data()['rating'] ?? doc.data()['ownerRating'] ?? 0).toDouble();
           }
           return {
             'average': total / snapshot.docs.length,
             'count': snapshot.docs.length,
-          };
-        });
-  }
-
-  // Get detailed breakdown for an owner
-  Stream<Map<String, double>> getOwnerDetailedRating(String ownerId) {
-    return _db
-        .collection('reviews')
-        .where('ownerId', isEqualTo: ownerId)
-        .snapshots()
-        .map((snapshot) {
-          if (snapshot.docs.isEmpty) {
-            return {'cleanliness': 0.0, 'accuracy': 0.0, 'communication': 0.0};
-          }
-          double c = 0, a = 0, com = 0;
-          for (var doc in snapshot.docs) {
-            final data = doc.data();
-            c += (data['cleanliness'] ?? 0).toDouble();
-            a += (data['accuracy'] ?? 0).toDouble();
-            com += (data['communication'] ?? 0).toDouble();
-          }
-          final count = snapshot.docs.length;
-          return {
-            'cleanliness': c / count,
-            'accuracy': a / count,
-            'communication': com / count,
           };
         });
   }
