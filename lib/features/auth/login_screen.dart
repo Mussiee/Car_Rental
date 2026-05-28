@@ -152,28 +152,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           : 'Already have an account? Login',
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Row(
-                    children: [
-                      Expanded(child: Divider()),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('OR', style: TextStyle(color: Colors.grey)),
-                      ),
-                      Expanded(child: Divider()),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  OutlinedButton.icon(
-                    onPressed: _signInWithGoogle,
-                    icon: const Icon(
-                      Icons.login,
-                    ), // Or use a custom google icon image
-                    label: const Text('Continue with Google'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.all(16),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -181,19 +159,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _signInWithGoogle() async {
-    final auth = context.read<AuthService>();
-    try {
-      await auth.signInWithGoogle();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
-      }
-    }
   }
 
   Future<void> _submit() async {
