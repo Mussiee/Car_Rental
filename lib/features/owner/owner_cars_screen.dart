@@ -164,8 +164,8 @@ class _AddCarScreenState extends State<AddCarScreen> {
   final _typeCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
   final _locationCtrl = TextEditingController();
-  final _featureCtrl = TextEditingController();
-  List<String> _features = [];
+  String _selectedFuelType = 'Gas';
+  final List<String> _fuelTypes = ['Gas', 'Electric', 'Hybrid'];
   List<String> _selectedUsage = [];
   final List<String> _usageOptions = ['city', 'long distance', 'mountain'];
   XFile? _pickedFile;
@@ -180,7 +180,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
   @override
   void dispose() {
     _nameCtrl.dispose(); _typeCtrl.dispose(); _priceCtrl.dispose();
-    _locationCtrl.dispose(); _featureCtrl.dispose();
+    _locationCtrl.dispose();
     super.dispose();
   }
 
@@ -213,15 +213,12 @@ class _AddCarScreenState extends State<AddCarScreen> {
             const SizedBox(height: 16),
             TextFormField(controller: _locationCtrl, decoration: const InputDecoration(labelText: 'Location', prefixIcon: Icon(Icons.location_on_outlined)), validator: (v) => v!.isEmpty ? 'Required' : null),
             const SizedBox(height: 24),
-            const Text('Features (AC, GPS, etc.)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text('Fuel Type', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
-            Row(children: [
-              Expanded(child: TextFormField(controller: _featureCtrl, decoration: const InputDecoration(hintText: 'Type a feature...'), onFieldSubmitted: (v) { if (v.trim().isNotEmpty) { setState(() { _features.add(v.trim()); _featureCtrl.clear(); }); } })),
-              const SizedBox(width: 8),
-              IconButton.filled(onPressed: () { if (_featureCtrl.text.trim().isNotEmpty) { setState(() { _features.add(_featureCtrl.text.trim()); _featureCtrl.clear(); }); } }, icon: const Icon(Icons.add)),
-            ]),
-            const SizedBox(height: 8),
-            Wrap(spacing: 8, children: _features.map((f) => Chip(label: Text(f), onDeleted: () => setState(() => _features.remove(f)))).toList()),
+            Wrap(spacing: 8, children: _fuelTypes.map((fuel) {
+              final isSelected = _selectedFuelType == fuel;
+              return ChoiceChip(label: Text(fuel), selected: isSelected, onSelected: (_) => setState(() => _selectedFuelType = fuel));
+            }).toList()),
             const Text('Best Use For (Usage)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
             Wrap(spacing: 8, children: _usageOptions.map((opt) {
@@ -250,7 +247,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
       final user = context.read<AuthService>().currentUser;
       final storage = StorageService();
       final imageUrl = await storage.uploadImage(_pickedFile!, 'cars/${DateTime.now().millisecondsSinceEpoch}_${user!.uid}.jpg');
-      final car = Car(id: DateTime.now().millisecondsSinceEpoch.toString(), name: _nameCtrl.text.trim(), type: _typeCtrl.text.trim(), price: double.parse(_priceCtrl.text.trim()), rating: 0, image: imageUrl, routeFitScore: 80, ownerId: user.uid, features: _features, suitable: [], location: _locationCtrl.text.trim(), usage: _selectedUsage);
+      final car = Car(id: DateTime.now().millisecondsSinceEpoch.toString(), name: _nameCtrl.text.trim(), type: _typeCtrl.text.trim(), price: double.parse(_priceCtrl.text.trim()), rating: 0, image: imageUrl, routeFitScore: 80, ownerId: user.uid, fuelType: _selectedFuelType, suitable: [], location: _locationCtrl.text.trim(), usage: _selectedUsage);
       await firestore.createCar(car);
       if (mounted) { Navigator.pop(context); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Car Listed Successfully!'))); }
     } catch (e) {

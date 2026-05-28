@@ -6,6 +6,7 @@ import '../../core/services/firestore_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/models/booking.dart';
 import '../messages/rate_trip_screen.dart';
+import '../messages/messages_screen.dart';
 
 class UserBookingsScreen extends StatelessWidget {
   const UserBookingsScreen({super.key});
@@ -129,6 +130,8 @@ class UserBookingsScreen extends StatelessWidget {
                       ),
                     ),
                     _buildStatusChip(booking.status),
+                    const SizedBox(width: 8),
+                    _buildChatButton(context, booking),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -184,6 +187,44 @@ class UserBookingsScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildChatButton(BuildContext context, Booking booking) {
+    return SizedBox(
+      width: 36,
+      height: 36,
+      child: IconButton(
+        onPressed: () async {
+          final firestore = context.read<FirestoreService>();
+          final user = context.read<AuthService>().currentUser;
+          if (user == null) return;
+          final myData = await firestore.getUser(user.uid);
+          final ownerData = await firestore.getUser(booking.ownerId);
+          final myName = myData?['displayName'] ?? user.displayName ?? 'User';
+          final ownerName = ownerData?['displayName'] ?? 'Owner';
+          final ownerEmail = ownerData?['email'] ?? '';
+          final chatId = await firestore.startChat(
+            myId: user.uid,
+            myName: myName,
+            myEmail: user.email ?? '',
+            ownerId: booking.ownerId,
+            ownerName: ownerName,
+            ownerEmail: ownerEmail,
+          );
+          if (context.mounted) {
+            Navigator.push(context, MaterialPageRoute(
+              builder: (_) => ChatScreen(chatId: chatId, otherUserName: ownerName, otherUserEmail: ownerEmail, otherUserId: booking.ownerId),
+            ));
+          }
+        },
+        icon: const Icon(Icons.chat_bubble_outline, size: 18),
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.blue.withOpacity(0.1),
+          foregroundColor: Colors.blue,
+          padding: EdgeInsets.zero,
+        ),
+      ),
     );
   }
 

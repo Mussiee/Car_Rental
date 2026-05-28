@@ -7,7 +7,7 @@ class Car {
   final double rating;
   final String image;
   final int routeFitScore;
-  final List<String> features;
+  final String fuelType; // Gas, Electric, Hybrid
   final List<String> suitable;
   final String location;
   final List<String> usage; // city, long distance, mountain
@@ -21,7 +21,7 @@ class Car {
     required this.rating,
     required this.image,
     required this.routeFitScore,
-    required this.features,
+    required this.fuelType,
     required this.suitable,
     required this.location,
     required this.usage,
@@ -37,7 +37,9 @@ class Car {
       rating: (data['rating'] ?? 0).toDouble(),
       image: data['image'] ?? '',
       routeFitScore: data['routeFitScore'] ?? 0,
-      features: List<String>.from(data['features'] ?? []),
+      fuelType: (data['features'] is List && (data['features'] as List).isNotEmpty)
+          ? (data['features'] as List).first.toString()
+          : data['fuelType'] ?? 'Gas',
       suitable: List<String>.from(data['suitable'] ?? []),
       location: data['location'] ?? '',
       usage: List<String>.from(data['usage'] ?? []),
@@ -53,7 +55,7 @@ class Car {
       'rating': rating,
       'image': image,
       'routeFitScore': routeFitScore,
-      'features': features,
+      'features': [fuelType],
       'suitable': suitable,
       'location': location,
       'usage': usage,

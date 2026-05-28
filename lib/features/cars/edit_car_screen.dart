@@ -23,8 +23,8 @@ class _EditCarScreenState extends State<EditCarScreen> {
   late TextEditingController _typeCtrl;
   late TextEditingController _priceCtrl;
   late TextEditingController _locationCtrl;
-  final _featureCtrl = TextEditingController();
-  List<String> _features = [];
+  String _selectedFuelType = 'Gas';
+  final List<String> _fuelTypes = ['Gas', 'Electric', 'Hybrid'];
   List<String> _selectedUsage = [];
   final List<String> _usageOptions = ['city', 'long distance', 'mountain'];
   XFile? _pickedFile;
@@ -39,13 +39,13 @@ class _EditCarScreenState extends State<EditCarScreen> {
     _priceCtrl = TextEditingController(text: widget.car.price.toString());
     _locationCtrl = TextEditingController(text: widget.car.location);
     _selectedUsage = List.from(widget.car.usage);
-    _features = List.from(widget.car.features);
+    _selectedFuelType = widget.car.fuelType;
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose(); _typeCtrl.dispose(); _priceCtrl.dispose();
-    _locationCtrl.dispose(); _featureCtrl.dispose();
+    _locationCtrl.dispose();
     super.dispose();
   }
 
@@ -85,15 +85,12 @@ class _EditCarScreenState extends State<EditCarScreen> {
             const SizedBox(height: 16),
             TextFormField(controller: _locationCtrl, decoration: const InputDecoration(labelText: 'Location', prefixIcon: Icon(Icons.location_on_outlined)), validator: (v) => v!.isEmpty ? 'Required' : null),
             const SizedBox(height: 24),
-            const Text('Features', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text('Fuel Type', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
-            Row(children: [
-              Expanded(child: TextFormField(controller: _featureCtrl, decoration: const InputDecoration(hintText: 'Add feature (AC, GPS...)'), onFieldSubmitted: (v) { if (v.trim().isNotEmpty) { setState(() { _features.add(v.trim()); _featureCtrl.clear(); }); } })),
-              const SizedBox(width: 8),
-              IconButton.filled(onPressed: () { if (_featureCtrl.text.trim().isNotEmpty) { setState(() { _features.add(_featureCtrl.text.trim()); _featureCtrl.clear(); }); } }, icon: const Icon(Icons.add)),
-            ]),
-            const SizedBox(height: 8),
-            Wrap(spacing: 8, children: _features.map((f) => Chip(label: Text(f), onDeleted: () => setState(() => _features.remove(f)))).toList()),
+            Wrap(spacing: 8, children: _fuelTypes.map((fuel) {
+              final isSelected = _selectedFuelType == fuel;
+              return ChoiceChip(label: Text(fuel), selected: isSelected, onSelected: (_) => setState(() => _selectedFuelType = fuel));
+            }).toList()),
             const Text('Best Use For (Usage)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
             Wrap(spacing: 8, children: _usageOptions.map((opt) {
@@ -123,7 +120,7 @@ class _EditCarScreenState extends State<EditCarScreen> {
       if (_pickedFile != null) {
         imageUrl = await storage.uploadImage(_pickedFile!, 'cars/${DateTime.now().millisecondsSinceEpoch}_${widget.car.ownerId}.jpg');
       }
-      final updatedCar = Car(id: widget.car.id, ownerId: widget.car.ownerId, name: _nameCtrl.text.trim(), type: _typeCtrl.text.trim(), price: double.parse(_priceCtrl.text.trim()), rating: widget.car.rating, image: imageUrl, routeFitScore: widget.car.routeFitScore, features: _features, suitable: widget.car.suitable, location: _locationCtrl.text.trim(), usage: _selectedUsage);
+      final updatedCar = Car(id: widget.car.id, ownerId: widget.car.ownerId, name: _nameCtrl.text.trim(), type: _typeCtrl.text.trim(), price: double.parse(_priceCtrl.text.trim()), rating: widget.car.rating, image: imageUrl, routeFitScore: widget.car.routeFitScore, fuelType: _selectedFuelType, suitable: widget.car.suitable, location: _locationCtrl.text.trim(), usage: _selectedUsage);
       await firestore.createCar(updatedCar);
       if (mounted) { Navigator.pop(context); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Car listing updated!'))); }
     } catch (e) {

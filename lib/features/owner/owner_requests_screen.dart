@@ -4,6 +4,7 @@ import '../../core/models/booking.dart';
 import '../../core/services/firestore_service.dart';
 import '../../core/services/auth_service.dart';
 import '../cars/booking_details_screen.dart';
+import '../messages/messages_screen.dart';
 
 class OwnerRequestsScreen extends StatelessWidget {
   const OwnerRequestsScreen({super.key});
@@ -51,7 +52,11 @@ class OwnerRequestsScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Trip: ${booking.tripType}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                          _buildStatusBadge(booking.status),
+                          Row(children: [
+                            _buildStatusBadge(booking.status),
+                            const SizedBox(width: 8),
+                            _buildChatButton(context, booking),
+                          ]),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -91,6 +96,44 @@ class OwnerRequestsScreen extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildChatButton(BuildContext context, Booking booking) {
+    return SizedBox(
+      width: 36,
+      height: 36,
+      child: IconButton(
+        onPressed: () async {
+          final firestore = context.read<FirestoreService>();
+          final user = context.read<AuthService>().currentUser;
+          if (user == null) return;
+          final myData = await firestore.getUser(user.uid);
+          final renterData = await firestore.getUser(booking.userId);
+          final myName = myData?['displayName'] ?? user.displayName ?? 'Owner';
+          final renterName = renterData?['displayName'] ?? booking.userName;
+          final renterEmail = renterData?['email'] ?? '';
+          final chatId = await firestore.startChat(
+            myId: booking.userId,
+            myName: renterName,
+            myEmail: renterEmail,
+            ownerId: user.uid,
+            ownerName: myName,
+            ownerEmail: user.email ?? '',
+          );
+          if (context.mounted) {
+            Navigator.push(context, MaterialPageRoute(
+              builder: (_) => ChatScreen(chatId: chatId, otherUserName: renterName, otherUserEmail: renterEmail, otherUserId: booking.userId),
+            ));
+          }
+        },
+        icon: const Icon(Icons.chat_bubble_outline, size: 18),
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.blue.withOpacity(0.1),
+          foregroundColor: Colors.blue,
+          padding: EdgeInsets.zero,
+        ),
       ),
     );
   }

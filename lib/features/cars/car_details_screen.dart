@@ -104,11 +104,18 @@ class CarDetailsScreen extends StatelessWidget {
                       Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Text(car.type, style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold))),
                     ]),
                     const SizedBox(height: 24),
-                    Text('Features', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text('Fuel Type', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
-                    Wrap(spacing: 8, runSpacing: 8, children: car.features.isEmpty
-                        ? [const Text('No features listed', style: TextStyle(color: Colors.grey, fontSize: 12))]
-                        : car.features.map((feature) => Chip(label: Text(feature), backgroundColor: Colors.grey[100], labelStyle: const TextStyle(fontSize: 12))).toList()),
+                    Chip(
+                      avatar: Icon(
+                        car.fuelType == 'Electric' ? Icons.electric_car :
+                        car.fuelType == 'Hybrid' ? Icons.eco : Icons.local_gas_station,
+                        size: 18,
+                      ),
+                      label: Text(car.fuelType),
+                      backgroundColor: Colors.grey[100],
+                      labelStyle: const TextStyle(fontSize: 12),
+                    ),
                     const SizedBox(height: 24),
                     Text('Best Used For', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),

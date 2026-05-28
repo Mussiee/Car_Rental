@@ -22,9 +22,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   String _searchQuery = '';
   final List<String> _categories = ['All', 'Sedan', 'SUV', 'Compact', 'Luxury'];
 
-  // Usage filters
-  final List<String> _usageOptions = ['city', 'long distance', 'mountain'];
-  final Set<String> _selectedUsageFilters = {};
+  String _selectedFuelType = 'All';
+  final List<String> _fuelTypes = ['All', 'Gas', 'Electric', 'Hybrid'];
 
   @override
   Widget build(BuildContext context) {
@@ -92,40 +91,32 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               ),
             ),
 
-            // Usage Filter Row
+            // Fuel Type Filter Row
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Row(
                 children: [
                   const Text(
-                    'Usage:',
+                    'Fuel:',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                   const SizedBox(width: 8),
-                  ..._usageOptions.map((usage) {
-                    final isSelected = _selectedUsageFilters.contains(usage);
+                  ..._fuelTypes.map((fuel) {
+                    final isSelected = _selectedFuelType == fuel;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: FilterChip(
                         selected: isSelected,
-                        label: Text(
-                          usage[0].toUpperCase() + usage.substring(1),
-                        ),
+                        label: Text(fuel),
                         onSelected: (selected) {
-                          setState(() {
-                            if (selected) {
-                              _selectedUsageFilters.add(usage);
-                            } else {
-                              _selectedUsageFilters.remove(usage);
-                            }
-                          });
+                          setState(() => _selectedFuelType = fuel);
                         },
                         backgroundColor: Theme.of(context).colorScheme.secondary.withOpacity(0.05),
                         selectedColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
                         side: BorderSide(
-                          color: isSelected 
-                              ? Theme.of(context).colorScheme.secondary 
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.secondary
                               : Colors.transparent,
                         ),
                         labelStyle: TextStyle(
@@ -134,8 +125,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               ? Theme.of(context).colorScheme.secondary
                               : Theme.of(context).colorScheme.secondary.withOpacity(0.8),
                         ),
-                        showCheckmark: true,
-                        checkmarkColor: Theme.of(context).colorScheme.secondary,
+                        showCheckmark: false,
                       ),
                     );
                   }),
@@ -158,7 +148,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
                   final cars = snapshot.data ?? [];
 
-                  // Filter by Search Query AND Usage
                   final filteredCars = cars.where((car) {
                     final matchesSearch =
                         car.name.toLowerCase().contains(
@@ -168,14 +157,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           _searchQuery.toLowerCase(),
                         );
 
-                    bool matchesUsage = true;
-                    if (_selectedUsageFilters.isNotEmpty) {
-                      matchesUsage = car.usage.any(
-                        (u) => _selectedUsageFilters.contains(u),
-                      );
-                    }
+                    final matchesFuel = _selectedFuelType == 'All' ||
+                        car.fuelType == _selectedFuelType;
 
-                    return matchesSearch && matchesUsage;
+                    return matchesSearch && matchesFuel;
                   }).toList();
 
                   if (filteredCars.isEmpty) {
