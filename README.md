@@ -1,4 +1,4 @@
-# Hermi Car Rental
+# Wub Drive
 
 A Flutter car rental app with Firebase authentication, Firestore database, and Cloudinary image storage. Users can browse and book cars, owners can list and manage their vehicles, and both can chat in real time.
 

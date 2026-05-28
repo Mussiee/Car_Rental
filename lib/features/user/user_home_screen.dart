@@ -37,7 +37,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     return _wrapWithNav(
       Scaffold(
         appBar: AppBar(
-          title: const Text('Hermi Car Rental'),
+          title: const Text('Wub Drive'),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(60),
             child: Padding(
