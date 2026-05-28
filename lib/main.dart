@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'core/services/auth_service.dart';
 import 'core/services/firestore_service.dart';
@@ -31,11 +30,6 @@ void main() async {
       ),
     );
 
-    // Initialize Supabase
-    await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL'] ?? '',
-      anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
-    );
   } catch (e) {
     print("Firebase init failed: $e");
   }
