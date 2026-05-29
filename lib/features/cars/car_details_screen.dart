@@ -49,7 +49,7 @@ class CarDetailsScreen extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(color: isAvailable ? Colors.green.withOpacity(0.9) : Colors.red.withOpacity(0.9), borderRadius: BorderRadius.circular(20)),
-                            child: Text(isAvailable ? 'AVAILABLE' : 'RENTED', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                            child: Text(isAvailable ? 'Available Today' : 'Rented Today', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                           ),
                         );
                       },
@@ -142,6 +142,10 @@ class CarDetailsScreen extends StatelessWidget {
                   final auth = context.read<AuthService>();
                   final user = auth.currentUser;
                   if (user == null) return;
+                  if (user.uid == car.ownerId) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("You can't message yourself")));
+                    return;
+                  }
                   final myData = await firestore.getUser(user.uid);
                   final ownerData = await firestore.getUser(car.ownerId);
                   final myName = myData?['displayName'] ?? user.displayName ?? 'User';
@@ -157,14 +161,14 @@ class CarDetailsScreen extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: StreamBuilder<bool>(
-                  stream: firestore.getCarAvailability(carId),
-                  builder: (context, availSnap) {
-                    final isAvailable = availSnap.data ?? true;
+                child: Builder(
+                  builder: (context) {
+                    final currentUser = context.read<AuthService>().currentUser;
+                    final isOwner = currentUser?.uid == car.ownerId;
                     return FilledButton(
-                      onPressed: !isAvailable ? null : () { Navigator.push(context, MaterialPageRoute(builder: (_) => BookingFlowScreen(carId: car.id))); },
-                      style: FilledButton.styleFrom(padding: const EdgeInsets.all(16), backgroundColor: isAvailable ? null : Colors.grey[400]),
-                      child: Text(isAvailable ? 'Book Now' : 'Currently Rented'),
+                      onPressed: isOwner ? null : () { Navigator.push(context, MaterialPageRoute(builder: (_) => BookingFlowScreen(carId: car.id))); },
+                      style: FilledButton.styleFrom(padding: const EdgeInsets.all(16)),
+                      child: const Text('Book Now'),
                     );
                   },
                 ),

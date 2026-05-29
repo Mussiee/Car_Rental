@@ -74,7 +74,7 @@ class CarCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          isAvailable ? 'AVAILABLE' : 'RENTED',
+                          isAvailable ? 'Available Today' : 'Rented Today',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,

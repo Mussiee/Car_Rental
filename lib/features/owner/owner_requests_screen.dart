@@ -87,6 +87,16 @@ class OwnerRequestsScreen extends StatelessWidget {
                                 child: const Text('Approve'),
                               ),
                             ]),
+                          if (booking.status == 'approved')
+                            FilledButton.icon(
+                              onPressed: () => _updateStatus(context, booking.id, 'completed'),
+                              icon: const Icon(Icons.check_circle_outline, size: 18),
+                              label: const Text('Mark as Completed'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                              ),
+                            ),
                         ],
                       ),
                     ],

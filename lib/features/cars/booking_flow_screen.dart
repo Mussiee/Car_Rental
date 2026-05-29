@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -20,11 +21,43 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
   DateTimeRange? _selectedDateRange;
   bool _isLoading = false;
   bool? _isAvailable;
+  List<Map<String, dynamic>> _bookedRanges = [];
+  StreamSubscription? _bookedRangesSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final firestore = context.read<FirestoreService>();
+      _bookedRangesSubscription = firestore.getCarBookedRanges(widget.carId).listen((ranges) {
+        if (mounted) setState(() => _bookedRanges = ranges);
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _bookedRangesSubscription?.cancel();
+    super.dispose();
+  }
 
   Future<void> _checkAvailability(String carId, DateTimeRange range) async {
     final firestore = context.read<FirestoreService>();
     final available = await firestore.isRangeAvailable(carId, range.start, range.end);
     if (mounted) setState(() { _isAvailable = available; });
+  }
+
+  bool _isDayBooked(DateTime day) {
+    final dayStart = DateTime(day.year, day.month, day.day);
+    final dayEnd = dayStart.add(const Duration(days: 1));
+    for (final range in _bookedRanges) {
+      if (range['status'] == 'approved') {
+        final start = range['startDate'] as DateTime;
+        final end = range['endDate'] as DateTime;
+        if (dayStart.isBefore(end) && dayEnd.isAfter(start)) return true;
+      }
+    }
+    return false;
   }
 
   @override
@@ -77,6 +110,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
                           context: context,
                           firstDate: DateTime.now(),
                           lastDate: DateTime.now().add(const Duration(days: 90)),
+                          selectableDayPredicate: (DateTime day, DateTime? start, DateTime? end) => !_isDayBooked(day),
                           builder: (context, child) => Theme(data: Theme.of(context).copyWith(colorScheme: ColorScheme.light(primary: Theme.of(context).primaryColor)), child: child!),
                         );
                         if (picked != null) {
@@ -127,6 +161,10 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
                   width: double.infinity,
                   child: FilledButton(
                     onPressed: _selectedDateRange == null || _isLoading || _isAvailable != true ? null : () async {
+                      if (user?.uid == car.ownerId) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("You can't book your own car")));
+                        return;
+                      }
                       setState(() => _isLoading = true);
                       try {
                         final booking = Booking(id: DateTime.now().millisecondsSinceEpoch.toString(), carId: car.id, carName: car.name, carImage: car.image, userId: user?.uid ?? 'unknown', userName: user?.displayName ?? 'User', ownerId: car.ownerId, startDate: _selectedDateRange!.start, endDate: _selectedDateRange!.end, totalPrice: totalPrice + 50, status: 'pending', tripType: 'Standard');

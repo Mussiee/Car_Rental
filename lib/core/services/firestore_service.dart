@@ -356,4 +356,27 @@ class FirestoreService {
     }
     return true;
   }
+
+  Stream<List<Map<String, dynamic>>> getCarBookedRanges(String carId) {
+    return _db
+        .collection('bookings')
+        .where('carId', isEqualTo: carId)
+        .snapshots()
+        .map((snapshot) {
+      final now = DateTime.now();
+      final ranges = <Map<String, dynamic>>[];
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final status = data['status'] as String?;
+        if (status != 'approved' && status != 'pending') continue;
+        final start = (data['startDate'] as Timestamp).toDate();
+        final end = (data['endDate'] as Timestamp).toDate();
+        if (end.isAfter(now)) {
+          ranges.add({'startDate': start, 'endDate': end, 'status': status});
+        }
+      }
+      ranges.sort((a, b) => (a['startDate'] as DateTime).compareTo(b['startDate'] as DateTime));
+      return ranges;
+    });
+  }
 }

@@ -160,29 +160,6 @@ class UserBookingsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (booking.status == 'approved')
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          final firestore = context.read<FirestoreService>();
-                          await firestore.updateBookingStatus(booking.id, 'completed');
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking marked as completed')));
-                          }
-                        },
-                        icon: const Icon(Icons.check_circle_outline),
-                        label: const Text('Mark as Completed'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                      ),
-                    ),
-                  ),
                 if (booking.status == 'completed' && !booking.isReviewed)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
