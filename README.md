@@ -17,7 +17,6 @@ A Flutter car rental app with Firebase authentication, Firestore database, and C
    FIREBASE_STORAGE_BUCKET=your_project.appspot.com
    FIREBASE_MESSAGING_SENDER_ID=your_sender_id
    FIREBASE_APP_ID=your_app_id
-   GOOGLE_WEB_CLIENT_ID=your_web_client_id
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_api_key
    CLOUDINARY_API_SECRET=your_api_secret
